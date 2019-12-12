@@ -183,7 +183,6 @@ describe('AdSlot', () => {
       expect(DFPManager.getSlotTargetingArguments(compProps.slotId)).to.equal(null);
     });
 
-
     it('Unregisters an AdSlot', () => {
       const compProps = {
         dfpNetworkId: '1000',

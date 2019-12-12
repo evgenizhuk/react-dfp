@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import BidManager from './bidManager';
 import * as Utils from './utils';
 
 let loadPromise = null;
@@ -195,7 +196,6 @@ const DFPManager = Object.assign(new EventEmitter().setMaxListeners(0), {
       this.getGoogletag().then((googletag) => {
         slotsToInitialize.forEach((currentSlotId) => {
           registeredSlots[currentSlotId].loading = false;
-
           googletag.cmd.push(() => {
             const slot = registeredSlots[currentSlotId];
             let gptSlot;
@@ -235,11 +235,15 @@ const DFPManager = Object.assign(new EventEmitter().setMaxListeners(0), {
         this.configureOptions(googletag);
         googletag.cmd.push(() => {
           googletag.enableServices();
-          if (!this.disableInitialLoadIsEnabled()) {
-            slotsToInitialize.forEach((theSlotId) => {
-              googletag.display(theSlotId);
+          BidManager.applyBids()
+            .catch(err => console.log(err.message))
+            .finally(() => {
+              if (!this.disableInitialLoadIsEnabled()) {
+                slotsToInitialize.forEach((theSlotId) => {
+                  googletag.display(theSlotId);
+                });
+              }
             });
-          }
           resolve();
         });
       });
@@ -309,11 +313,15 @@ const DFPManager = Object.assign(new EventEmitter().setMaxListeners(0), {
     if (loadPromise === null) {
       this.load();
     } else {
-      this.gptRefreshAds(
-        Object.keys(
-          this.getRefreshableSlots(...slots),
-        ),
-      );
+      BidManager.applyBids(BidManager.getSlotsByIDs(slots))
+        .catch(err => console.log(err.message))
+        .finally(() => {
+          this.gptRefreshAds(
+            Object.keys(
+              this.getRefreshableSlots(...slots),
+            ),
+          );
+        });
     }
   },
 
@@ -409,6 +417,7 @@ const DFPManager = Object.assign(new EventEmitter().setMaxListeners(0), {
 
   unregisterSlot({ slotId }) {
     this.destroyGPTSlots(slotId);
+    BidManager.unregisterSlot(slotId);
     delete registeredSlots[slotId];
   },
 

@@ -15,8 +15,28 @@ function doloadGPTScript(resolve, reject) {
   document.getElementsByTagName('head')[0].appendChild(scriptTag);
 }
 
+function doLoadBidsScript(amazonConfig, resolve, reject) {
+  // Load the APS JavaScript Library
+  try {
+    /* eslint-disable */
+    !function(a9,a,p,s,t,A,g){if(a[a9])return;function q(c,r){a[a9]._Q.push([c,r])}a[a9]={init:function(){q("i",arguments)},fetchBids:function(){q("f",arguments)},setDisplayBids:function(){},targetingKeys:function(){return[]},_Q:[]};A=p.createElement(s);A.async=!0;A.src=t;g=p.getElementsByTagName(s)[0];g.parentNode.insertBefore(A,g)}("apstag",window,document,"script","//c.amazon-adsystem.com/aax2/apstag.js");
+    /* eslint-enable */
+  } catch (error) {
+    reject(error);
+  }
+  window.apstag.init(amazonConfig, () => {
+    resolve(window.apstag);
+  });
+}
+
 export function loadGPTScript() {
   return new Promise((resolve, reject) => {
     doloadGPTScript(resolve, reject);
+  });
+}
+
+export function loadBidsScript(config) {
+  return new Promise((resolve, reject) => {
+    doLoadBidsScript(config, resolve, reject);
   });
 }

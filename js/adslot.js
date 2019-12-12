@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import DFPManager from './manager';
 import { Context } from './dfpslotsprovider';
+import BidManager from './bidManager';
 
 let dynamicAdCount = 0;
 
@@ -27,10 +28,12 @@ export class AdSlot extends React.Component {
     shouldRefresh: PropTypes.func,
     slotId: PropTypes.string,
     className: PropTypes.string,
+    withBids: PropTypes.bool,
   };
 
   static defaultProps = {
     fetchNow: false,
+    withBids: false,
   };
 
   constructor(props) {
@@ -103,6 +106,13 @@ export class AdSlot extends React.Component {
       ...this.state,
       slotShouldRefresh: this.slotShouldRefresh,
     });
+    if (this.props.withBids === true) {
+      BidManager.registerSlot(
+        this.getSlotId(),
+        this.props.sizes,
+        this.props.adUnit,
+      );
+    }
     if (this.props.fetchNow === true) {
       DFPManager.load(this.getSlotId());
     }
